@@ -1,0 +1,5 @@
+{
+  "name": "AI Video Script Generator",
+  "description": "An application to automate the entire video script writing process using AI. It handles generating outlines, writing content, creating SEO metadata, and generating thumbnails, all managed through a user-friendly interface.",
+  "requestFramePermissions": []
+}
