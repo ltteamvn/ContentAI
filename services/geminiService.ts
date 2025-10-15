@@ -73,8 +73,8 @@ const generateWithRetry = async <T,>(
     throw new Error("API call failed after multiple retries.");
 };
 
-export const generateOutline = async (title: string, prompts: PromptConfig): Promise<string[]> => {
-    const prompt = prompts.outline.replace('{title}', title);
+export const generateOutline = async (script: string, prompts: PromptConfig): Promise<string[]> => {
+    const prompt = prompts.outline.replace('...', `\`\`\`\n${script}\n\`\`\``);
     const schema = {
         type: Type.ARRAY,
         items: { type: Type.STRING }
@@ -82,14 +82,16 @@ export const generateOutline = async (title: string, prompts: PromptConfig): Pro
     return generateWithRetry<string[]>(prompt, true, schema);
 };
 
-export const generateIntro = async (title: string, outlinePoint: string, prompts: PromptConfig): Promise<string> => {
-    const prompt = prompts.intro.replace('{title}', title).replace('{outlinePoint}', outlinePoint);
-    return generateWithRetry<string>(prompt);
+export const generateIntro = async (outlinePoint: string, userScript: string, prompts: PromptConfig): Promise<string> => {
+    const filledPrompt = prompts.intro.replace('...', `"${outlinePoint}"`);
+    const fullPrompt = `Đây là kịch bản gốc để tham khảo:\n"""\n${userScript}\n"""\n\nHãy thực hiện yêu cầu sau: ${filledPrompt}`;
+    return generateWithRetry<string>(fullPrompt);
 };
 
-export const generateContent = async (title: string, outlinePoint: string, prompts: PromptConfig): Promise<string> => {
-    const prompt = prompts.content.replace('{title}', title).replace('{outlinePoint}', outlinePoint);
-    return generateWithRetry<string>(prompt);
+export const generateContent = async (outlinePoint: string, userScript: string, previousContent: string, prompts: PromptConfig): Promise<string> => {
+    const filledPrompt = prompts.content.replace('...', `"${outlinePoint}"`);
+    const fullPrompt = `Đây là kịch bản gốc để tham khảo:\n"""\n${userScript}\n"""\n\nĐây là nội dung đã được viết cho các phần trước đó:\n"""\n${previousContent}\n"""\n\nHãy thực hiện yêu cầu sau, đảm bảo nội dung mới liền mạch với phần trước: ${filledPrompt}`;
+    return generateWithRetry<string>(fullPrompt);
 };
 
 interface SeoResult {
@@ -98,8 +100,8 @@ interface SeoResult {
     keywords: string[];
 }
 
-export const generateSEO = async (title: string, script: string, prompts: PromptConfig): Promise<SeoResult> => {
-    const prompt = prompts.seo.replace('{title}', title).replace('{script}', script.substring(0, 15000)); // Truncate script to avoid exceeding token limits
+export const generateSEO = async (title: string, prompts: PromptConfig): Promise<SeoResult> => {
+    const prompt = `${prompts.seo}\n\n${title}`;
     const schema = {
         type: Type.OBJECT,
         properties: {
@@ -116,11 +118,11 @@ export const generateSEO = async (title: string, script: string, prompts: Prompt
 };
 
 export const generateVideoPrompts = async (script: string, prompts: PromptConfig): Promise<string> => {
-    const prompt = prompts.videoPrompt.replace('{script}', script.substring(0, 15000));
+    const prompt = prompts.videoPrompt.replace('...', `\`\`\`\n${script}\n\`\`\``);
     return generateWithRetry<string>(prompt);
 };
 
-export const generateThumbnail = async (title: string): Promise<string> => {
+export const generateThumbnailFromTitle = async (title: string): Promise<string> => {
     try {
         const response = await ai.models.generateImages({
             model: 'imagen-4.0-generate-001',
@@ -154,7 +156,10 @@ export const fetchYouTubeTranscript = async (url: string): Promise<string> => {
     if (!url || !url.startsWith('http')) {
         throw new Error("Vui lòng nhập một link YouTube hợp lệ.");
     }
-    const prompt = `Provide a detailed summary or transcript of the video at this URL: ${url}. Focus on extracting the main spoken content. If a direct transcript is available, prefer that.`;
+    const prompt = `Analyze the YouTube video at this URL: ${url}. 
+    Your primary goal is to extract a detailed summary or transcript of the main spoken content.
+    IT IS CRITICAL THAT YOU IGNORE ALL ADVERTISEMENTS. Do not include content from ads that may appear at the beginning, middle, or end of the video. Focus exclusively on the core content created by the channel owner.
+    If a direct transcript is available, prefer that. Otherwise, provide a thorough summary of the video's topics.`;
     
     let attempts = 3;
     while (attempts > 0) {

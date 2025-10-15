@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { Job } from '../types';
 import { JobStatus } from '../types';
-import { PlayIcon, TrashIcon, ChevronDownIcon, DocumentTextIcon, TagIcon, FilmIcon, PhotographIcon } from './icons/Icons';
+import { PlayIcon, TrashIcon, ChevronDownIcon, DocumentTextIcon, TagIcon, FilmIcon, PhotographIcon, ArchiveBoxIcon } from './icons/Icons';
 
 interface JobTableProps {
   jobs: Job[];
@@ -11,6 +11,7 @@ interface JobTableProps {
   onDeleteJob: (jobId: string) => void;
   onDeleteAll: () => void;
   onDownload: (job: Job, fileType: 'content' | 'sale' | 'videoPrompt' | 'thumbnail') => void;
+  onDownloadAll: (job: Job) => void;
 }
 
 const StatusBadge: React.FC<{ status: JobStatus }> = ({ status }) => {
@@ -36,7 +37,7 @@ const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => {
     );
 };
 
-const ActionButtons: React.FC<{ job: Job; onRunJob: (id: string) => void; onDeleteJob: (id: string) => void; onDownload: JobTableProps['onDownload'] }> = ({ job, onRunJob, onDeleteJob, onDownload }) => {
+const ActionButtons: React.FC<{ job: Job; onRunJob: (id: string) => void; onDeleteJob: (id: string) => void; onDownload: JobTableProps['onDownload']; onDownloadAll: JobTableProps['onDownloadAll'] }> = ({ job, onRunJob, onDeleteJob, onDownload, onDownloadAll }) => {
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -50,10 +51,10 @@ const ActionButtons: React.FC<{ job: Job; onRunJob: (id: string) => void; onDele
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const DownloadMenuItem: React.FC<{ icon: React.ReactNode; label: string; onClick: () => void }> = ({ icon, label, onClick }) => (
+    const DownloadMenuItem: React.FC<{ icon: React.ReactNode; label: string; onClick: () => void; isFirst?: boolean }> = ({ icon, label, onClick, isFirst }) => (
         <button
             onClick={() => { onClick(); setDropdownOpen(false); }}
-            className="w-full text-left px-4 py-2 text-sm text-slate-200 hover:bg-slate-600 flex items-center gap-3 transition-colors"
+            className={`w-full text-left px-4 py-2 text-sm text-slate-200 hover:bg-slate-600 flex items-center gap-3 transition-colors ${isFirst ? 'border-b border-slate-600' : ''}`}
         >
             {icon}
             <span>{label}</span>
@@ -71,7 +72,8 @@ const ActionButtons: React.FC<{ job: Job; onRunJob: (id: string) => void; onDele
                         Tải xuống <ChevronDownIcon />
                     </button>
                     {isDropdownOpen && (
-                        <div className="absolute top-full right-0 mt-2 w-52 bg-slate-700 rounded-md shadow-lg z-10 border border-slate-600 overflow-hidden">
+                        <div className="absolute top-full right-0 mt-2 w-56 bg-slate-700 rounded-md shadow-lg z-10 border border-slate-600 overflow-hidden">
+                            <DownloadMenuItem icon={<ArchiveBoxIcon />} label="Tải xuống tất cả (.zip)" onClick={() => onDownloadAll(job)} isFirst={true} />
                             <DownloadMenuItem icon={<DocumentTextIcon />} label="Kịch bản (.txt)" onClick={() => onDownload(job, 'content')} />
                             <DownloadMenuItem icon={<TagIcon />} label="SEO & Sale (.txt)" onClick={() => onDownload(job, 'sale')} />
                             <DownloadMenuItem icon={<FilmIcon />} label="Prompt Video (.txt)" onClick={() => onDownload(job, 'videoPrompt')} />
@@ -107,7 +109,7 @@ const ActionButtons: React.FC<{ job: Job; onRunJob: (id: string) => void; onDele
 };
 
 
-export const JobTable: React.FC<JobTableProps> = ({ jobs, onRunJob, onRunAll, onDeleteJob, onDeleteAll, onDownload }) => {
+export const JobTable: React.FC<JobTableProps> = ({ jobs, onRunJob, onRunAll, onDeleteJob, onDeleteAll, onDownload, onDownloadAll }) => {
   return (
     <div className="bg-slate-800/50 rounded-xl shadow-2xl border border-slate-700 overflow-hidden">
         <div className="p-4 flex justify-between items-center border-b border-slate-700">
@@ -154,7 +156,7 @@ export const JobTable: React.FC<JobTableProps> = ({ jobs, onRunJob, onRunAll, on
                                 </div>
                             </td>
                             <td className="px-6 py-4 text-right">
-                                <ActionButtons job={job} onRunJob={onRunJob} onDeleteJob={onDeleteJob} onDownload={onDownload} />
+                                <ActionButtons job={job} onRunJob={onRunJob} onDeleteJob={onDeleteJob} onDownload={onDownload} onDownloadAll={onDownloadAll} />
                             </td>
                         </tr>
                     ))}

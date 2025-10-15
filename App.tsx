@@ -14,7 +14,7 @@ const App: React.FC = () => {
   const [activeScreen, setActiveScreen] = useState<Screen>(Screen.MAIN);
   const [config, setConfig] = useLocalStorage<AppConfig>('appConfig', {
     prompts: {
-        outline: 'Dựa vào nội dung này [...], hãy tạo cho tôi 1 dàn ý nội dung gồm 10 phần. Lưu ý: kịch bản sẽ cho video tiktok nên đoạn đầu tiên cần hấp dẫn, có nhiều câu hỏi, có nhiều bí ẩn, có nhiều plot-twist để giữ chân người dùng. Hiển thị kết quả theo cấu trúc sau:\n[Tên phần]: Nội dung chính; Thời gian; Câu mở đầu; Câu kết thúc;',
+        outline: 'Dựa vào nội dung này ..., hãy tạo cho tôi 1 dàn ý nội dung gồm 10 phần. Lưu ý: kịch bản sẽ cho video tiktok nên đoạn đầu tiên cần hấp dẫn, có nhiều câu hỏi, có nhiều bí ẩn, có nhiều plot-twist để giữ chân người dùng. Hiển thị kết quả theo cấu trúc sau:\n[Tên phần]: Nội dung chính; Thời gian; Câu mở đầu; Câu kết thúc;',
         intro: 'Dựa vào ý này: "..." và kết hợp với nội dung gốc. Hãy viết cho tôi đoạn mở đầu hấp dẫn. Viết bằng tiếng Việt. Đoạn này có độ dài không quá 200 chữ theo cách đếm của google docs.',
         content: 'Dựa vào ý này: "..." và kết hợp với nội dung gốc. Hãy viết cho tôi đoạn tiếp theo liền kết với đoạn trên. Viết bằng tiếng Việt. Đoạn này có độ dài không quá 200 chữ theo cách đếm của google docs.',
         seo: 'Làm cho tôi 2 việc sau:\nViệc 1: Dựa vào tiêu đề video dưới, viết một tả video này trên youtube cho tôi, độ dài 100 từ, viết bằng tiếng Indonesia, cần có 2 lần xuất hiện từ "CHỮA LÀNH" và "NIỀM TIN" trong đoạn văn.\nViệc 2: SEO cho video tôi với tiêu đề dưới bằng cách gợi ý 10 từ khóa thẻ tag, trong đó mỗi từ khóa 3, 2 từ, viết mỗi danh dạng ngang cách nhau bằng dấu ",".\nTrả lời theo cấu trúc sau:\nTiêu đề... (tối đa... 7 từ khóa)...\nTiêu đề video cần làm đây:',

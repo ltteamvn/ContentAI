@@ -17,6 +17,7 @@ export interface Job {
   title: string;
   videoCode: string;
   youtubeLink?: string;
+  userScript: string;
   status: JobStatus;
   progress: number;
   progressMessage: string;
