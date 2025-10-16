@@ -901,6 +901,19 @@ class MainApp {
                  console.error("Invalid SEO data received:", seoText);
                  throw new Error("Không thể tạo dữ liệu SEO hợp lệ. Dữ liệu trả về không phải là một đối tượng (object).");
             }
+
+            let seoData = seoResult;
+            // Handle cases where the AI might wrap the result in a single top-level key.
+            const topLevelKeys = Object.keys(seoResult);
+            if (topLevelKeys.length === 1 && typeof seoResult[topLevelKeys[0]] === 'object' && seoResult[topLevelKeys[0]] !== null) {
+                const nestedObject = seoResult[topLevelKeys[0]];
+                // Check if the nested object looks like our SEO data
+                const nestedKeys = Object.keys(nestedObject).map(k => k.toLowerCase());
+                if (nestedKeys.includes('title') || nestedKeys.includes('description') || nestedKeys.includes('keywords')) {
+                     console.warn("Detected nested SEO object. Using nested data.", nestedObject);
+                     seoData = nestedObject;
+                }
+            }
             
             // A more robust way to get a value regardless of key case
             const findValueByKey = (obj, keys) => {
@@ -915,22 +928,25 @@ class MainApp {
             };
 
             const normalizedSeo = {
-                title: findValueByKey(seoResult, ['title', 'new_title', 'newTitle', 'tiêu đề']),
-                description: findValueByKey(seoResult, ['description', 'mô tả']),
-                keywords: findValueByKey(seoResult, ['keywords', 'tags', 'từ khóa']),
+                title: findValueByKey(seoData, ['title', 'new_title', 'newTitle', 'tiêu đề', 'tieu_de']),
+                description: findValueByKey(seoData, ['description', 'mô tả', 'mo_ta']),
+                keywords: findValueByKey(seoData, ['keywords', 'tags', 'từ khóa', 'tu_khoa']),
             };
 
 
             if (normalizedSeo.keywords && !Array.isArray(normalizedSeo.keywords)) {
                 if (typeof normalizedSeo.keywords === 'string') {
-                    normalizedSeo.keywords = normalizedSeo.keywords.split(',').map(k => k.trim()).filter(k => k);
+                    // Split by comma, semicolon, or newline for more robustness
+                    normalizedSeo.keywords = normalizedSeo.keywords.split(/[,;\n]/).map(k => k.trim()).filter(k => k);
                 } else {
                      console.warn("Keywords format is not an array or string, cannot process:", normalizedSeo.keywords);
-                     normalizedSeo.keywords = [];
+                     normalizedSeo.keywords = []; // Default to empty array
                 }
+            } else if (!normalizedSeo.keywords) {
+                 normalizedSeo.keywords = []; // Default to empty array if key was not found
             }
 
-            if (!normalizedSeo.title || !normalizedSeo.description || !normalizedSeo.keywords) {
+            if (!normalizedSeo.title || !normalizedSeo.description || !Array.isArray(normalizedSeo.keywords)) {
                  console.error("Invalid SEO data received (after normalization):", normalizedSeo);
                  throw new Error("Không thể tạo dữ liệu SEO hợp lệ. Dữ liệu trả về thiếu các trường bắt buộc (title, description, keywords).");
             }
