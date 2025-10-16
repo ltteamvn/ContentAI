@@ -1,47 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Video Script Generator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Script Automator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <style>
-      /* Custom scrollbar for better aesthetics */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #f1f5f9;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 10px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-      }
-      body {
-        background-color: #e5e7eb;
-        background-image: radial-gradient(#4b5563 0.5px, transparent 0.5px);
-        background-size: 16px 16px;
-      }
-    </style>
-<script type="importmap">
-{
-  "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0"
-  }
-}
-</script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="text-slate-800">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+<body>
+
+    <div id="login-page" class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl shadow-slate-950/50 w-full max-w-sm">
+            <h2 class="text-2xl font-bold text-slate-200 mb-6 text-center">Đăng nhập</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-slate-400 mb-1">Tên đăng nhập</label>
+                    <input type="text" id="username" name="username" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" value="admin">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-slate-400 mb-1">Mật khẩu</label>
+                    <input type="password" id="password" name="password" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" value="admin">
+                </div>
+                <div id="login-error" class="text-red-500 text-sm text-center hidden"></div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-all duration-300">
+                    Đăng nhập
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container" class="container mx-auto p-4 md:p-8" style="display: none;">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-slate-200">Video Script Automator</h1>
+            <nav class="flex items-center gap-2">
+                <a href="?page=main" id="nav-main" class="px-4 py-2 text-slate-400 font-semibold rounded-md hover:bg-slate-800 hover:text-white transition-colors">Trang chủ</a>
+                <a href="?page=setup" id="nav-setup" class="px-4 py-2 text-slate-400 font-semibold rounded-md hover:bg-slate-800 hover:text-white transition-colors">Cài đặt</a>
+                 <button id="logout-btn" class="px-4 py-2 text-slate-400 font-semibold rounded-md hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" /></svg>
+                    Đăng xuất
+                </button>
+            </nav>
+        </header>
+
+        <div id="main-page" style="display: none;">
+            <!-- Main App -->
+            <div class="space-y-8">
+                <!-- Add Job Form -->
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl shadow-slate-950/50">
+                    <h2 class="text-2xl font-bold text-slate-200 mb-4">Thêm video mới</h2>
+                    <form id="add-job-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="video-code" class="block text-sm font-medium text-slate-400 mb-1">Mã video</label>
+                                <input type="text" id="video-code" name="video-code" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. vid001">
+                            </div>
+                            <div>
+                                <label for="youtubeLink" class="block text-sm font-medium text-slate-400 mb-1">Link Youtube (tùy chọn)</label>
+                                <input type="url" id="youtubeLink" name="youtubeLink" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Để lấy thumbnail có sẵn">
+                            </div>
+                        </div>
+                         <div>
+                            <label for="title" class="block text-sm font-medium text-slate-400 mb-1">Tiêu đề video</label>
+                            <input type="text" id="title" name="title" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Cách làm bánh mì tại nhà">
+                        </div>
+                        <div>
+                            <label for="script-content" class="block text-sm font-medium text-slate-400 mb-1">Nội dung kịch bản</label>
+                            <textarea id="script-content" name="script-content" rows="6" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Dán nội dung kịch bản gốc vào đây..."></textarea>
+                        </div>
+                        <div id="form-error" class="text-red-500 text-sm hidden"></div>
+                        <div class="text-right">
+                            <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+                                Thêm vào hàng đợi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Jobs Table -->
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl shadow-slate-950/50 text-white">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                        <h2 class="text-2xl font-bold">Danh sách công việc</h2>
+                        <div class="flex gap-2 flex-wrap justify-end">
+                             <button id="run-all-btn" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700 transition-colors flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
+                                Chạy tất cả
+                            </button>
+                            <button id="download-all-completed-btn" class="bg-sky-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-sky-700 transition-colors flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" /><path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
+                                Tải tất cả (zip)
+                            </button>
+                            <button id="delete-all-btn" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                                Xóa tất cả
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-slate-300">
+                            <thead class="text-xs text-slate-400 uppercase bg-slate-800">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Mã video</th>
+                                    <th scope="col" class="px-6 py-3">Tiêu đề</th>
+                                    <th scope="col" class="px-6 py-3">Trạng thái</th>
+                                    <th scope="col" class="px-6 py-3">Tiến trình</th>
+                                    <th scope="col" class="px-6 py-3 text-right">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobs-table-body">
+                                <!-- Job rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Job Row Template -->
+            <template id="job-row-template">
+                <tr class="border-b border-slate-700 hover:bg-slate-800/50">
+                    <td class="px-6 py-4 font-mono text-slate-400 video-code"></td>
+                    <td class="px-6 py-4 font-medium text-white max-w-xs truncate job-title"></td>
+                    <td class="px-6 py-4 job-status"></td>
+                    <td class="px-6 py-4">
+                        <div class="w-full bg-slate-700 rounded-full h-2.5 progress-bar-container" style="display: none;">
+                            <div class="bg-blue-500 h-2.5 rounded-full progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="text-xs text-slate-400 mt-1 progress-message"></div>
+                    </td>
+                    <td class="px-6 py-4 text-right job-actions"></td>
+                </tr>
+            </template>
+        </div>
+
+        <div id="setup-page" style="display: none;">
+            <!-- Setup Page -->
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl shadow-slate-950/50 max-w-4xl mx-auto">
+                 <h2 class="text-2xl font-bold text-slate-200 mb-6">Cấu hình</h2>
+                 <form id="setup-form" class="space-y-6">
+                     <div class="border-b border-slate-800 pb-6">
+                        <h3 class="text-lg font-bold text-slate-200 mb-3">API Keys</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="gemini-api-key" class="block text-sm font-medium text-slate-400 mb-1">Gemini API Key</label>
+                                <input type="password" id="gemini-api-key" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" placeholder="Nhập API Key Gemini">
+                            </div>
+                            <div>
+                                <label for="openai-api-key" class="block text-sm font-medium text-slate-400 mb-1">OpenAI API Key (GPT-4)</label>
+                                <input type="password" id="openai-api-key" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" placeholder="Nhập API Key OpenAI">
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">API Keys của bạn sẽ được lưu trữ an toàn trong trình duyệt của bạn.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-200 mb-3">Prompt</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="prompt-outline" class="block text-sm font-medium text-slate-400 mb-1">Dàn ý (Outline)</label>
+                                <textarea id="prompt-outline" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"></textarea>
+                            </div>
+                            <div>
+                                <label for="prompt-intro" class="block text-sm font-medium text-slate-400 mb-1">Mở đầu (Intro)</label>
+                                <textarea id="prompt-intro" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"></textarea>
+                            </div>
+                            <div>
+                                <label for="prompt-content" class="block text-sm font-medium text-slate-400 mb-1">Nội dung (Content)</label>
+                                <textarea id="prompt-content" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"></textarea>
+                            </div>
+                            <div>
+                                <label for="prompt-seo" class="block text-sm font-medium text-slate-400 mb-1">SEO & Sale</label>
+                                <textarea id="prompt-seo" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"></textarea>
+                            </div>
+                            <div>
+                                <label for="prompt-videoPrompt" class="block text-sm font-medium text-slate-400 mb-1">Prompt Video</label>
+                                <textarea id="prompt-videoPrompt" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-slate-800 pt-6">
+                        <h3 class="text-lg font-bold text-slate-200 mb-3">API khác</h3>
+                        <div id="other-apis-container" class="space-y-2">
+                           <!-- Other API inputs will be rendered here -->
+                        </div>
+                        <button type="button" id="add-other-api-btn" class="mt-2 text-sm text-blue-500 hover:text-blue-400 font-semibold flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" /></svg>
+                            Thêm API
+                        </button>
+                    </div>
+                    
+                    <div class="text-right border-t border-slate-800 pt-6">
+                        <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-all duration-300">
+                            Lưu cấu hình
+                        </button>
+                    </div>
+                 </form>
+            </div>
+        </div>
+    </div>
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.run/@google/genai"
+      }
+    }
+    </script>
+    <script src="assets/js/main.js" type="module" defer></script>
 </body>
 </html>

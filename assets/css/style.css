@@ -1,0 +1,33 @@
+/* Custom scrollbar for better aesthetics in dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b; /* slate-800 */
+}
+::-webkit-scrollbar-thumb {
+  background: #475569; /* slate-600 */
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b; /* slate-500 */
+}
+
+body {
+  /* A more professional, subtle dark gradient background */
+  background-color: #0f172a; /* slate-900 */
+  background-image:
+    radial-gradient(at 20% 80%, hsla(217,39%,11%,1) 0px, transparent 50%),
+    radial-gradient(at 80% 20%, hsla(283,45%,15%,1) 0px, transparent 50%),
+    radial-gradient(at 80% 80%, hsla(217,50%,10%,1) 0px, transparent 50%);
+  color: #e2e8f0; /* slate-200 */
+}
+
+/* For the dropdown menu in JobTable */
+.dropdown-menu {
+    display: none;
+}
+.dropdown-menu.show {
+    display: block;
+}
