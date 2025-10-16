@@ -159,14 +159,30 @@
                  <form id="setup-form" class="space-y-6">
                      <div class="border-b border-slate-800 pb-6">
                         <h3 class="text-lg font-bold text-slate-200 mb-3">API Keys</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-4">
                             <div>
                                 <label for="gemini-api-key" class="block text-sm font-medium text-slate-400 mb-1">Gemini API Key</label>
                                 <input type="password" id="gemini-api-key" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" placeholder="Nhập API Key Gemini">
                             </div>
-                            <div>
-                                <label for="openai-api-key" class="block text-sm font-medium text-slate-400 mb-1">OpenAI API Key (GPT-4)</label>
-                                <input type="password" id="openai-api-key" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" placeholder="Nhập API Key OpenAI">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="openai-api-key" class="block text-sm font-medium text-slate-400 mb-1">OpenAI API Key</label>
+                                    <input type="password" id="openai-api-key" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" placeholder="Nhập API Key OpenAI">
+                                </div>
+                                <div>
+                                    <label for="openai-model" class="block text-sm font-medium text-slate-400 mb-1">OpenAI Model</label>
+                                    <select id="openai-model" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm">
+                                        <option value="gpt-5-pro">GPT-5 Pro</option>
+                                        <option value="gpt-5">GPT-5</option>
+                                        <option value="gpt-5-mini">GPT-5 Mini</option>
+                                        <option value="gpt-5-nano">GPT-5 Nano</option>
+                                        <option value="gpt-5-chat-latest">GPT-5 Chat Latest</option>
+                                        <option value="gpt-5-codex">GPT-5 Codex</option>
+                                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                                        <option value="gpt-4o">GPT-4o</option>
+                                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <p class="text-xs text-slate-500 mt-2">API Keys của bạn sẽ được lưu trữ an toàn trong trình duyệt của bạn.</p>
@@ -187,7 +203,7 @@
                                 <textarea id="prompt-content" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"></textarea>
                             </div>
                             <div>
-                                <label for="prompt-seo" class="block text-sm font-medium text-slate-400 mb-1">SEO & Sale</label>
+                                <label for="prompt-seo" class="block text-sm font-medium text-slate-400 mb-1">SEO</label>
                                 <textarea id="prompt-seo" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"></textarea>
                             </div>
                             <div>

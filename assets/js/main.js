@@ -1,3 +1,5 @@
+
+
 import { GoogleGenAI, Type } from '@google/genai';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -85,6 +87,7 @@ class ConfigManager {
         this.defaultConfig = {
             geminiApiKey: '',
             openaiApiKey: '',
+            openaiModel: 'gpt-4-turbo',
             prompts: {
                 outline: 'Dựa vào nội dung này ..., hãy tạo cho tôi 1 dàn ý nội dung gồm 10 phần. Lưu ý: kịch bản sẽ cho video tiktok nên đoạn đầu tiên cần hấp dẫn, có nhiều câu hỏi, có nhiều bí ẩn, có nhiều plot-twist để giữ chân người dùng. Hiển thị kết quả theo cấu trúc sau:\n[Tên phần]: Nội dung chính; Thời gian; Câu mở đầu; Câu kết thúc;',
                 intro: 'Dựa vào ý này: "..." và kết hợp với nội dung gốc. Hãy viết cho tôi đoạn mở đầu hấp dẫn. Viết bằng tiếng Việt. Đoạn này có độ dài không quá 200 chữ theo cách đếm của google docs.',
@@ -146,6 +149,7 @@ class SetupApp {
         // API Keys
         document.getElementById('gemini-api-key').value = config.geminiApiKey || '';
         document.getElementById('openai-api-key').value = config.openaiApiKey || '';
+        document.getElementById('openai-model').value = config.openaiModel || 'gpt-4-turbo';
         // Prompts
         document.getElementById('prompt-outline').value = config.prompts.outline || '';
         document.getElementById('prompt-intro').value = config.prompts.intro || '';
@@ -213,6 +217,7 @@ class SetupApp {
         // API Keys
         newConfig.geminiApiKey = document.getElementById('gemini-api-key').value;
         newConfig.openaiApiKey = document.getElementById('openai-api-key').value;
+        newConfig.openaiModel = document.getElementById('openai-model').value;
         // Prompts
         newConfig.prompts.outline = document.getElementById('prompt-outline').value;
         newConfig.prompts.intro = document.getElementById('prompt-intro').value;
@@ -390,7 +395,7 @@ class MainApp {
         }
         
         const body = {
-            model: "gpt-4-turbo",
+            model: this.config.openaiModel || "gpt-4-turbo",
             messages: messages,
         };
 
@@ -546,7 +551,7 @@ class MainApp {
             case 'delete': this.handleDeleteJob(jobId); break;
             case 'download-all': this.handleDownloadAllForJob(jobId); break;
             case 'download-content': this.handleDownload(jobId, 'content'); break;
-            case 'download-sale': this.handleDownload(jobId, 'sale'); break;
+            case 'download-seo': this.handleDownload(jobId, 'seo'); break;
             case 'download-videoPrompt': this.handleDownload(jobId, 'videoPrompt'); break;
             case 'download-thumbnail': this.handleDownload(jobId, 'thumbnail'); break;
         }
@@ -589,8 +594,8 @@ class MainApp {
             case 'content':
                 fileUtils.downloadFile(`${videoCode}_content.txt`, output.content, 'text/plain');
                 break;
-            case 'sale':
-                fileUtils.downloadFile(`${videoCode}_sale.txt`, output.sale, 'text/plain');
+            case 'seo':
+                fileUtils.downloadFile(`${videoCode}_seo.txt`, output.seo, 'text/plain');
                 break;
             case 'videoPrompt':
                 fileUtils.downloadFile(`${videoCode}_prom_video.txt`, output.videoPrompt, 'text/plain');
@@ -611,7 +616,7 @@ class MainApp {
 
         const filesToZip = [
             { name: `${videoCode}-content.txt`, content: output.content },
-            { name: `${videoCode}-sale.txt`, content: output.sale },
+            { name: `${videoCode}-seo.txt`, content: output.seo },
             { name: `${videoCode}-prom_video.txt`, content: output.videoPrompt },
         ];
 
@@ -634,7 +639,7 @@ class MainApp {
             const { videoCode, output } = job;
             const folder = `${videoCode}/`;
             filesToZip.push({ name: `${folder}${videoCode}-content.txt`, content: output.content });
-            filesToZip.push({ name: `${folder}${videoCode}-sale.txt`, content: output.sale });
+            filesToZip.push({ name: `${folder}${videoCode}-seo.txt`, content: output.seo });
             filesToZip.push({ name: `${folder}${videoCode}-prom_video.txt`, content: output.videoPrompt });
              if (output.thumbnail && output.thumbnail.length > 0) {
                 filesToZip.push({ name: `${folder}${videoCode}-thumbnail.jpg`, content: output.thumbnail, isBase64: true });
@@ -735,7 +740,7 @@ class MainApp {
                         <div class="dropdown-menu absolute top-full right-0 mt-2 w-56 bg-slate-800 rounded-md shadow-lg z-10 border border-slate-700 overflow-hidden">
                             <button data-action="download-all" data-id="${job.id}" class="w-full text-left px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 flex items-center gap-3 transition-colors border-b border-slate-700"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" /><path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd" /></svg><span>Tải xuống tất cả (.zip)</span></button>
                             <button data-action="download-content" data-id="${job.id}" class="w-full text-left px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 flex items-center gap-3 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" /></svg><span>Kịch bản (.txt)</span></button>
-                            <button data-action="download-sale" data-id="${job.id}" class="w-full text-left px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 flex items-center gap-3 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A1 1 0 012 10V5a1 1 0 011-1h5a1 1 0 01.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg><span>SEO & Sale (.txt)</span></button>
+                            <button data-action="download-seo" data-id="${job.id}" class="w-full text-left px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 flex items-center gap-3 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A1 1 0 012 10V5a1 1 0 011-1h5a1 1 0 01.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg><span>SEO (.txt)</span></button>
                             <button data-action="download-videoPrompt" data-id="${job.id}" class="w-full text-left px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 flex items-center gap-3 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm2 2a1 1 0 00-1 1v2a1 1 0 001 1h2a1 1 0 001-1V6a1 1 0 00-1-1H6zm5 0a1 1 0 00-1 1v2a1 1 0 001 1h2a1 1 0 001-1V6a1 1 0 00-1-1h-2zM6 11a1 1 0 00-1 1v2a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 00-1-1H6zm5 0a1 1 0 00-1 1v2a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 00-1-1h-2z" clip-rule="evenodd" /></svg><span>Prompt Video (.txt)</span></button>
                             ${thumbnailBtn}
                         </div>
@@ -806,29 +811,37 @@ class MainApp {
             }
 
             const convertOutlineToArray = (data) => {
-                if (Array.isArray(data)) return data;
-                if (typeof data !== 'object' || data === null) return null;
+                let sourceArray;
 
-                const values = Object.values(data);
-
-                for (const key in data) {
-                    if (Array.isArray(data[key])) return data[key];
+                if (Array.isArray(data)) {
+                    sourceArray = data;
+                } else if (typeof data === 'object' && data !== null) {
+                    // Try to find an array property in the object
+                    sourceArray = Object.values(data).find(value => Array.isArray(value));
+                    // If no array found, use the object's values as the array
+                    if (!sourceArray) {
+                        sourceArray = Object.values(data);
+                    }
+                } else {
+                    return null; // Input is not an array or object
                 }
 
-                if (values.length > 0 && typeof values[0] === 'object' && values[0] !== null) {
-                    const contentArray = values.map(item => {
-                        if (typeof item !== 'object' || item === null) return null;
-                        return item.noi_dung_chinh || item.content || item.text || item.title || Object.values(item)[0];
-                    }).filter(item => typeof item === 'string');
-                    
-                    if (contentArray.length > 0) return contentArray;
+                if (!sourceArray || sourceArray.length === 0) {
+                    return null;
                 }
-
-                if (values.length > 0 && typeof values[0] === 'string') {
-                    return values;
-                }
-
-                return null;
+                
+                // Ensure all items in the array are strings
+                return sourceArray.map(item => {
+                    if (typeof item === 'string') {
+                        return item;
+                    }
+                    if (typeof item === 'object' && item !== null) {
+                        // For objects, try to find a meaningful string value
+                        const values = Object.values(item);
+                        return item.noi_dung_chinh || item.content || item.text || item.title || values.find(v => typeof v === 'string') || values.join('; ');
+                    }
+                    return String(item || ''); // Convert other types to string
+                });
             }
 
             const outline = convertOutlineToArray(rawOutline);
@@ -889,12 +902,24 @@ class MainApp {
                  throw new Error("Không thể tạo dữ liệu SEO hợp lệ. Dữ liệu trả về không phải là một đối tượng (object).");
             }
             
-            // Normalize SEO data keys
-            const normalizedSeo = {
-                title: seoResult.title || seoResult.new_title || seoResult.newTitle,
-                description: seoResult.description,
-                keywords: seoResult.keywords || seoResult.tags,
+            // A more robust way to get a value regardless of key case
+            const findValueByKey = (obj, keys) => {
+                if (!obj || typeof obj !== 'object') return undefined;
+                const lowerCaseKeys = keys.map(k => k.toLowerCase());
+                for (const key in obj) {
+                    if (lowerCaseKeys.includes(key.toLowerCase())) {
+                        return obj[key];
+                    }
+                }
+                return undefined;
             };
+
+            const normalizedSeo = {
+                title: findValueByKey(seoResult, ['title', 'new_title', 'newTitle', 'tiêu đề']),
+                description: findValueByKey(seoResult, ['description', 'mô tả']),
+                keywords: findValueByKey(seoResult, ['keywords', 'tags', 'từ khóa']),
+            };
+
 
             if (normalizedSeo.keywords && !Array.isArray(normalizedSeo.keywords)) {
                 if (typeof normalizedSeo.keywords === 'string') {
@@ -909,7 +934,7 @@ class MainApp {
                  console.error("Invalid SEO data received (after normalization):", normalizedSeo);
                  throw new Error("Không thể tạo dữ liệu SEO hợp lệ. Dữ liệu trả về thiếu các trường bắt buộc (title, description, keywords).");
             }
-            const saleContent = `Tiêu đề: ${normalizedSeo.title}\n\nMô tả:\n${normalizedSeo.description}\n\nTừ khóa:\n${normalizedSeo.keywords.join(', ')}`;
+            const seoContent = `${normalizedSeo.title}\n\n${normalizedSeo.description}\n\n${normalizedSeo.keywords.join(', ')}`;
 
 
             // Step 13: Video Prompts
@@ -938,7 +963,7 @@ class MainApp {
                 status: this.jobStatus.COMPLETED,
                 progress: 1,
                 progressMessage: 'Hoàn thành!',
-                output: { content: fullScript, sale: saleContent, videoPrompt: videoPromptContent, thumbnail: thumbnailBase64 }
+                output: { content: fullScript, seo: seoContent, videoPrompt: videoPromptContent, thumbnail: thumbnailBase64 }
             });
 
         } catch (error) {
